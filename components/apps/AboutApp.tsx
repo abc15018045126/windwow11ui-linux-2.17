@@ -47,7 +47,7 @@ const AboutApp: React.FC<AppComponentProps> = ({ appInstanceId, setTitle }) => {
 export const appDefinition: AppDefinition = {
   id: 'about',
   name: 'About This PC',
-  icon: AboutIcon,
+  icon: 'about',
   component: AboutApp,
   defaultSize: { width: 450, height: 380 },
 };

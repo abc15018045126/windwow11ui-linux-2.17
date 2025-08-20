@@ -150,7 +150,7 @@ const Chrome4App: React.FC<AppComponentProps> = ({ setTitle: setWindowTitle }) =
 export const appDefinition: AppDefinition = {
   id: 'chrome4',
   name: 'Chrome 4',
-  icon: Browser4Icon,
+  icon: 'chrome4',
   component: Chrome4App,
   defaultSize: { width: 900, height: 650 },
   isPinnedToTaskbar: true,

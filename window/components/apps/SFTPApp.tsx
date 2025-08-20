@@ -406,5 +406,5 @@ const SFTPApp: React.FC<AppComponentProps> = ({ setTitle, openApp }) => {
     );
 };
 
-export const appDefinition: AppDefinition = { id: 'sftp', name: 'SFTP Client', icon: SftpIcon, component: SFTPApp, defaultSize: { width: 950, height: 650 } };
+export const appDefinition: AppDefinition = { id: 'sftp', name: 'SFTP Client', icon: 'sftp', component: SFTPApp, defaultSize: { width: 950, height: 650 } };
 export default SFTPApp;

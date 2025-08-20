@@ -60,7 +60,7 @@ export type AppComponentType = React.FC<AppComponentProps>;
 export interface AppDefinition {
   id: string;
   name: string;
-  icon: React.FC<AppIconProps>;
+  icon: string;
   component: AppComponentType;
   defaultSize?: { width: number; height: number };
   isPinnedToTaskbar?: boolean; // To show on taskbar by default
@@ -68,8 +68,7 @@ export interface AppDefinition {
   externalPath?: string; // Path relative to app root for the external app
 }
 
-export interface OpenApp extends Omit<AppDefinition, 'icon'> {
-  icon?: string; // The icon name string, now optional
+export interface OpenApp extends AppDefinition {
   instanceId: string;
   zIndex: number;
   position: { x: number; y: number };

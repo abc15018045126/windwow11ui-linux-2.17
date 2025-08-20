@@ -95,7 +95,7 @@ const GeminiChatApp: React.FC<AppComponentProps> = ({ appInstanceId, setTitle })
 export const appDefinition: AppDefinition = {
   id: 'geminiChat',
   name: 'Gemini Chat',
-  icon: GeminiIcon,
+  icon: 'geminiChat',
   component: GeminiChatApp,
   defaultSize: { width: 500, height: 700 },
   isPinnedToTaskbar: true,

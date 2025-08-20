@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AppDefinition, AppComponentProps } from '../../../types';
-import { StoreIcon, RefreshIcon, HyperIcon } from '../../../constants';
+import { RefreshIcon, HyperIcon } from '../../../constants';
+import Icon from './icon';
 
 const AppStoreApp: React.FC<AppComponentProps> = ({ setTitle }) => {
     const [availableApps, setAvailableApps] = useState<any[]>([]);
@@ -51,7 +52,7 @@ const AppStoreApp: React.FC<AppComponentProps> = ({ setTitle }) => {
         <div className="p-6 text-zinc-200 h-full overflow-y-auto custom-scrollbar bg-zinc-900">
             <div className="flex items-center justify-between mb-6">
                  <div className="flex items-center">
-                    <StoreIcon className="w-10 h-10 text-blue-400 mr-4" />
+                    <Icon iconName="appStore" className="w-10 h-10 text-blue-400 mr-4" />
                     <div>
                         <h1 className="text-2xl font-semibold text-white">App Store</h1>
                         <p className="text-sm text-zinc-400">Discover and install new applications.</p>
@@ -100,7 +101,7 @@ const AppStoreApp: React.FC<AppComponentProps> = ({ setTitle }) => {
 export const appDefinition: AppDefinition = {
     id: 'appStore',
     name: 'App Store',
-    icon: StoreIcon,
+    icon: 'appStore',
     component: AppStoreApp,
     defaultSize: { width: 750, height: 550 },
     isPinnedToTaskbar: true,
