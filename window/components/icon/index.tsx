@@ -22,7 +22,7 @@ const iconMap: { [key: string]: React.FC<AppIconProps> } = {
     sftp: Icons.SftpIcon,
     appStore: Icons.AppStoreIcon,
     refresh: Icons.RefreshIcon,
-    theme: Icons.ThemeIcon,
+    themes: Icons.ThemeIcon,
     folder: Icons.FolderIcon,
     fileCode: Icons.FileCodeIcon,
     fileJson: Icons.FileJsonIcon,
