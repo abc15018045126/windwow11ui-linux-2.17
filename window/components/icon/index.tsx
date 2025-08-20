@@ -19,6 +19,7 @@ const iconMap: { [key: string]: React.FC<AppIconProps> } = {
     chrome2: Icons.Browser2Icon,
     chrome3: Icons.Browser3Icon,
     chrome4: Icons.Browser4Icon,
+    chrome5: Icons.BrowserIcon,
     sftp: Icons.SftpIcon,
     appStore: Icons.AppStoreIcon,
     refresh: Icons.RefreshIcon,
