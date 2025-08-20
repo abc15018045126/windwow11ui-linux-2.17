@@ -8,6 +8,7 @@ import Desktop from './components/Desktop';
 import { ThemeContext, themes } from './theme';
 import { AppContext } from './contexts/AppContext';
 import { useWindowManager } from './hooks/useWindowManager';
+import { APP_DEFINITIONS } from '../components/apps';
 
 const App: React.FC = () => {
   const desktopRef = useRef<HTMLDivElement>(null);
@@ -77,7 +78,7 @@ const App: React.FC = () => {
 
 
   return (
-    <AppContext.Provider value={{ apps: discoveredApps }}>
+    <AppContext.Provider value={{ apps: APP_DEFINITIONS }}>
       <ThemeContext.Provider value={{ theme, setTheme: handleThemeChange }}>
         <div
           ref={desktopRef}
