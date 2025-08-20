@@ -31,28 +31,84 @@ function startApiServer() {
     apiApp.get('/api/apps', async (req, res) => {
         try {
             const appsDir = path.join(FS_ROOT, 'components', 'apps');
-            const appFiles = await fs.promises.readdir(appsDir);
+            const entries = await fs.promises.readdir(appsDir, { withFileTypes: true });
 
-            const appPromises = appFiles
-                .filter(file => file.endsWith('.app'))
-                .map(async (file) => {
+            const tsxFiles = new Set(entries.filter(e => e.isFile() && e.name.endsWith('App.tsx')).map(e => e.name));
+
+            const appPromises = entries
+                .filter(entry => entry.isDirectory())
+                .map(async (dir) => {
                     try {
-                        const filePath = path.join(appsDir, file);
-                        const content = await fs.promises.readFile(filePath, 'utf-8');
-                        const definition = JSON.parse(content);
-                        definition.id = file; // Use filename as a unique ID
-                        return definition;
+                        const packageJsonPath = path.join(appsDir, dir.name, 'package.json');
+                        await fs.promises.access(packageJsonPath); // Check if package.json exists
+
+                        const content = await fs.promises.readFile(packageJsonPath, 'utf-8');
+                        const pkg = JSON.parse(content);
+
+                        const isInstalled = tsxFiles.has(`${dir.name}App.tsx`);
+
+                        return {
+                            id: dir.name.toLowerCase(),
+                            name: dir.name,
+                            description: pkg.description || 'A discovered application.',
+                            version: pkg.version || '1.0.0',
+                            isExternal: true,
+                            path: path.join('components', 'apps', dir.name),
+                            isInstalled: isInstalled,
+                        };
                     } catch (e) {
-                        console.error(`Could not parse app definition: ${file}`, e);
-                        return null; // Ignore malformed app files
+                        // Ignore directories that are not valid apps (e.g., no package.json)
+                        return null;
                     }
                 });
 
-            const apps = (await Promise.all(appPromises)).filter(Boolean); // Filter out nulls
+            const apps = (await Promise.all(appPromises)).filter(Boolean);
             res.json(apps);
         } catch (error) {
             console.error('API Error getting app list:', error);
             res.status(500).json({ error: 'Failed to get app list' });
+        }
+    });
+
+    // Endpoint to "install" an app by creating its .tsx file
+    apiApp.post('/api/install', async (req, res) => {
+        const { id, name, path: appPath } = req.body;
+        if (!id || !name || !appPath) {
+            return res.status(400).json({ error: 'Missing required app details for installation.' });
+        }
+
+        const componentName = `${name}App`;
+        const tsxFilePath = path.join(FS_ROOT, 'components', 'apps', `${componentName}.tsx`);
+
+        const tsxContent = `
+import React from 'react';
+import { AppDefinition, AppComponentProps } from '../../window/types';
+import { TerminalIcon } from '../../window/constants'; // Using a generic icon
+
+const ${componentName}: React.FC<AppComponentProps> = () => {
+  // This component can be minimal as it's for an external app
+  return null;
+};
+
+export const appDefinition: AppDefinition = {
+  id: '${id}',
+  name: '${name}',
+  icon: TerminalIcon, // Assign a generic icon
+  isExternal: true,
+  externalPath: '${appPath}',
+  component: ${componentName},
+};
+
+export default ${componentName};
+`;
+
+        try {
+            await fs.promises.writeFile(tsxFilePath, tsxContent.trim());
+            console.log(`Successfully created ${tsxFilePath}`);
+            res.status(201).json({ success: true, message: `App ${name} installed.` });
+        } catch (error) {
+            console.error(`Failed to write TSX file for ${name}:`, error);
+            res.status(500).json({ error: `Failed to install app ${name}.` });
         }
     });
 
