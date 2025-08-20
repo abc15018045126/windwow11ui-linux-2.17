@@ -18,8 +18,8 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
   }, []);
 
   useEffect(() => {
-    loadApps();
-  }, [loadApps]);
+    loadAndSetApps();
+  }, [loadAndSetApps]);
 
   const getNextPosition = (appWidth: number, appHeight: number) => {
     const desktopWidth = desktopRef.current?.clientWidth || window.innerWidth;
