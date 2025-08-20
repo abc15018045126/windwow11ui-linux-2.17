@@ -32,6 +32,8 @@ const iconMap: { [key: string]: React.FC<AppIconProps> } = {
     sound: Icons.SoundIcon,
     battery: Icons.BatteryIcon,
     gemini: Icons.GeminiIcon,
+    geminiChat: Icons.GeminiIcon,
+    properties: Icons.AboutIcon,
     lightbulb: Icons.LightbulbIcon,
     user: Icons.UserIcon,
     copy: Icons.CopyIcon,

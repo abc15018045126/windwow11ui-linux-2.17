@@ -8,7 +8,7 @@ const SettingsApp: React.FC<AppComponentProps> = ({ setTitle, onWallpaperChange 
 
   useEffect(() => {
     setTitle(`Settings`);
-  }, [setTitle]);
+  }, []);
 
   return (
     <div className={`p-6 h-full overflow-y-auto custom-scrollbar ${theme.appWindow.textColor}`}>
