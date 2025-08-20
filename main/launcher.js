@@ -14,17 +14,22 @@ function launchExternalAppByPath(relativeAppPath, args = []) {
         const child = spawn('npm', ['start'], {
             cwd: appDir,
             detached: true,
-            stdio: 'ignore', // Use 'ignore' to prevent stdio pipes from keeping the process alive
-            shell: true, // Important to use shell for 'npm start' on all platforms
+            stdio: 'pipe', // We use 'pipe' to capture stderr
+            shell: true,
+        });
+
+        // Log any errors from the child process
+        child.stderr.on('data', (data) => {
+            console.error(`[${path.basename(appDir)}] stderr: ${data}`);
         });
 
         child.on('error', (err) => {
-            console.error(`Failed to start subprocess for ${appDir}. Error: ${err.message}`);
+            console.error(`[Launcher] Failed to start subprocess for ${appDir}. Error: ${err.message}`);
         });
 
         child.on('exit', (code, signal) => {
             if (code !== 0) {
-                console.error(`Subprocess for ${appDir} exited with code ${code} and signal ${signal}`);
+                console.error(`[Launcher] Subprocess for ${appDir} exited with code ${code} and signal ${signal}`);
             }
         });
 
