@@ -4,15 +4,14 @@ const { FS_ROOT } = require('./constants');
 
 function launchExternalAppByPath(relativeAppPath, args = []) {
     try {
-        // The relative path points to the app's main script. We need its directory for the CWD.
-        const appPath = path.join(FS_ROOT, relativeAppPath);
-        const appDir = path.dirname(appPath);
+        const appDir = path.join(FS_ROOT, relativeAppPath);
 
-        const spawnArgs = ['.', '--launched-by-host', ...args];
+        // The first argument to Electron should be the path to the app to launch.
+        // We also add our custom flag to identify it as a child process.
+        const spawnArgs = [appDir, '--launched-by-host', ...args];
         console.log(`Attempting to launch external app from directory: ${appDir} with args: ${spawnArgs.join(' ')}`);
         
         const child = spawn(process.execPath, spawnArgs, {
-            cwd: appDir, // Correctly set CWD to the app's directory
             detached: true,
             stdio: 'inherit',
         });
