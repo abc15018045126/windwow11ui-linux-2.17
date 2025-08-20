@@ -42,18 +42,13 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-    const isChildInstance = process.argv.includes('--launched-by-host');
+    setupInitialFilesystem();
+    initializeIpcHandlers();
 
-    // Only the main instance should run servers and initial setup
-    if (!isChildInstance) {
-        setupInitialFilesystem();
-        initializeIpcHandlers();
-
-        startApiServer();
-        startTerminusServer();
-        startSftpServer();
-        startChrome3Proxy(); // Start the new SOCKS5 proxy client for Chrome 3
-    }
+    startApiServer();
+    startTerminusServer();
+    startSftpServer();
+    startChrome3Proxy(); // Start the new SOCKS5 proxy client for Chrome 3
     
     // Apply header stripping to enable loading restricted sites in webviews
     setupHeaderStripping('persist:chrome1');
