@@ -32,7 +32,7 @@ export const getAppDefinitions = async (): Promise<AppDefinition[]> => {
     const chrome5AppDefinition: AppDefinition = {
       id: 'chrome5',
       name: 'Chrome 5',
-      icon: () => null, // No static icon component available
+      icon: 'chrome5',
       component: () => null, // Dummy component for external app
       isExternal: true,
       externalPath: 'components/apps/Chrome5/main.js'

@@ -51,7 +51,7 @@ const ThemeApp: React.FC<AppComponentProps> = ({ setTitle, onWallpaperChange }) 
 export const appDefinition: AppDefinition = {
     id: 'themes',
     name: 'Themes',
-    icon: ThemeIcon,
+    icon: 'themes',
     component: ThemeApp,
     defaultSize: { width: 500, height: 400 },
 };
