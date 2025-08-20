@@ -39,28 +39,25 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
     };
   };
 
-  const openApp = useCallback(async (appIdentifier: string | DiscoveredAppDefinition, initialData?: any) => {
-    let appInfo: DiscoveredAppDefinition | undefined;
+  const openApp = useCallback(async (appIdentifier: string | AppDefinition, initialData?: any) => {
+    // 1. Resolve the App Definition from the master list
+    const appId = typeof appIdentifier === 'string' ? appIdentifier : appIdentifier.id;
+    const appDef = APP_DEFINITIONS.find(app => app.id === appId);
 
-    if (typeof appIdentifier === 'string') {
-      appInfo = discoveredApps.find(app => app.appId === appIdentifier);
-    } else {
-      appInfo = appIdentifier;
-    }
-
-    if (!appInfo) {
-        console.error(`App with identifier "${appIdentifier}" not found.`);
+    if (!appDef) {
+        console.error(`App with identifier "${appId}" not found in APP_DEFINITIONS.`);
         return;
     }
 
-    if (appInfo.external && appInfo.path) {
+    // 2. Handle External Apps
+    if (appDef.isExternal && appDef.externalPath) {
       if (window.electronAPI?.launchExternalApp) {
-        window.electronAPI.launchExternalApp(appInfo.path);
+        window.electronAPI.launchExternalApp(appDef.externalPath);
       } else {
         fetch('http://localhost:3001/api/launch', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path: appInfo.path }),
+          body: JSON.stringify({ path: appDef.externalPath }),
         }).catch(error => {
           console.error('Failed to launch external app via API:', error);
           alert('Failed to launch application. Ensure the backend server is running.');
@@ -69,30 +66,21 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
       return;
     }
 
-    // Handle both DiscoveredAppDefinition (with appId) and full AppDefinition (with id)
-    const appId = 'appId' in appInfo ? appInfo.appId : appInfo.id;
-    if (!appId) {
-        console.error("Could not determine app ID from identifier:", appIdentifier);
-        return;
-    }
-
-    const appDef = APP_DEFINITIONS.find(app => app.id === appId);
-    if (!appDef) return;
-
+    // 3. Handle Internal Apps
     if (!initialData) {
-      const existingAppInstance = openApps.find(app => app.id === appInfo!.appId && !app.isMinimized);
+      const existingAppInstance = openApps.find(app => app.id === appDef.id && !app.isMinimized);
       if (existingAppInstance) {
         focusApp(existingAppInstance.instanceId);
         return;
       }
-      const minimizedInstance = openApps.find(app => app.id === appInfo!.appId && app.isMinimized);
+      const minimizedInstance = openApps.find(app => app.id === appDef.id && app.isMinimized);
       if (minimizedInstance) {
         toggleMinimizeApp(minimizedInstance.instanceId);
         return;
       }
     }
 
-    const instanceId = `${appInfo!.appId}-${Date.now()}`;
+    const instanceId = `${appDef.id}-${Date.now()}`;
     const newZIndex = nextZIndex + 1;
     setNextZIndex(newZIndex);
 
@@ -101,7 +89,7 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
 
     const newApp: OpenApp = {
       ...appDef,
-      icon: appInfo.icon, // Pass the icon name string
+      icon: appDef.id, // Pass the icon name string
       instanceId,
       zIndex: newZIndex,
       position: getNextPosition(defaultWidth, defaultHeight),

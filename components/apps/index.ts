@@ -1,6 +1,7 @@
 
 
 import type { AppDefinition } from '../../window/types';
+import { BrowserIcon } from '../../window/constants';
 
 import { appDefinition as aboutAppDefinition } from './AboutApp';
 import { appDefinition as fileExplorerAppDefinition } from '../../window/components/FileExplorerApp';
@@ -26,8 +27,18 @@ import { appDefinition as propertiesAppDefinition } from './PropertiesApp';
  * 2. In that file, export an `appDefinition` object of type `AppDefinition`.
  * 3. Import that definition here and add it to this array.
  */
+const chrome5AppDefinition: AppDefinition = {
+  id: 'chrome5',
+  name: 'Chrome 5',
+  icon: BrowserIcon,
+  component: () => null, // Dummy component for external app
+  isExternal: true,
+  externalPath: 'components/apps/Chrome5/main.js'
+};
+
 export const APP_DEFINITIONS: AppDefinition[] = [
   appStoreAppDefinition,
+  chrome5AppDefinition,
   themeAppDefinition,
   sftpAppDefinition,
   terminusAppDefinition, // New simplified local terminal
