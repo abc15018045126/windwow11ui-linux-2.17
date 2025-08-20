@@ -75,7 +75,7 @@ const Taskbar: React.FC<TaskbarProps> = ({ openApps, activeAppInstanceId, onTogg
                             ${isMinimized ? 'opacity-70' : ''}`}
                 title={appDef.name}
               >
-                <Icon iconName={appDef.id} className="w-5 h-5" isSmall />
+                <Icon iconName={appDef.icon} className="w-5 h-5" isSmall />
                 {isOpen && (
                   <span className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 w-4 h-1 rounded-t-sm 
                                   ${isActive ? theme.taskbar.activeIndicator : isMinimized ? 'bg-gray-400' : 'bg-gray-500'}`}></span>
