@@ -108,9 +108,9 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
       initialData: initialData,
     };
 
-    setOpenApps(prev => [...prev, newApp]);
+    setOpenApps(currentOpenApps => [...currentOpenApps, newApp]);
     setActiveAppInstanceId(instanceId);
-  }, [appDefinitions, openApps, nextZIndex]);
+  }, [appDefinitions, nextZIndex]);
 
   const focusApp = useCallback((instanceId: string) => {
     if (activeAppInstanceId === instanceId) return;
