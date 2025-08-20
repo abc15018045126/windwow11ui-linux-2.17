@@ -210,7 +210,8 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
   return {
     openApps,
     activeAppInstanceId,
-    discoveredApps,
+    appDefinitions,
+    appsLoading,
     desktopRef, // We need to pass the real ref from the component
     openApp,
     focusApp,

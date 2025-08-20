@@ -1,5 +1,3 @@
-
-
 import type { AppDefinition } from '../../window/types';
 
 let appDefinitions: AppDefinition[] | null = null;
