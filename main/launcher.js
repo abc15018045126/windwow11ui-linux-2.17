@@ -14,6 +14,10 @@ function launchExternalAppByPath(relativeAppPath, args = []) {
         const child = spawn(process.execPath, spawnArgs, {
             detached: true,
             stdio: 'inherit',
+            env: {
+                ...process.env,
+                NODE_PATH: path.resolve(FS_ROOT, 'node_modules'),
+            }
         });
 
         child.on('error', (err) => {
