@@ -69,8 +69,14 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
       return;
     }
 
-    if (!appInfo.appId) return;
-    const appDef = APP_DEFINITIONS.find(app => app.id === appInfo.appId);
+    // Handle both DiscoveredAppDefinition (with appId) and full AppDefinition (with id)
+    const appId = 'appId' in appInfo ? appInfo.appId : appInfo.id;
+    if (!appId) {
+        console.error("Could not determine app ID from identifier:", appIdentifier);
+        return;
+    }
+
+    const appDef = APP_DEFINITIONS.find(app => app.id === appId);
     if (!appDef) return;
 
     if (!initialData) {

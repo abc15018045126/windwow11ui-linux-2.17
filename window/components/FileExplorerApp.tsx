@@ -52,7 +52,7 @@ const FileExplorerApp: React.FC<AppComponentProps> = ({
     useEffect(() => {
         const pathName = currentPath === '/' ? 'Project Root' : currentPath.split('/').pop() || 'Files';
         setTitle(`File Explorer - ${pathName}`);
-    }, [currentPath, setTitle]);
+    }, [currentPath]);
     
     useEffect(() => {
         fetchItems();

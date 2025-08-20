@@ -77,7 +77,7 @@ const NotebookApp: React.FC<AppComponentProps> = ({ setTitle, initialData }) => 
     // Update window title when file name or dirty state changes
     useEffect(() => {
         setTitle(`${isDirty ? '*' : ''}${fileName} - Notebook`);
-    }, [setTitle, fileName, isDirty]);
+    }, [fileName, isDirty]);
 
     // Handles loading file from path, OR from direct content injection
     useEffect(() => {
