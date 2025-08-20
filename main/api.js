@@ -83,7 +83,7 @@ function startApiServer() {
         const tsxContent = `
 import React from 'react';
 import { AppDefinition, AppComponentProps } from '../../window/types';
-import { TerminalIcon } from '../../window/constants'; // Using a generic icon
+import { HyperIcon } from '../../window/constants'; // Using a generic icon
 
 const ${componentName}: React.FC<AppComponentProps> = () => {
   // This component can be minimal as it's for an external app
@@ -93,7 +93,7 @@ const ${componentName}: React.FC<AppComponentProps> = () => {
 export const appDefinition: AppDefinition = {
   id: '${id}',
   name: '${name}',
-  icon: TerminalIcon, // Assign a generic icon
+  icon: HyperIcon, // Assign a generic icon
   isExternal: true,
   externalPath: '${appPath}',
   component: ${componentName},
