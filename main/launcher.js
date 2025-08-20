@@ -8,7 +8,7 @@ function launchExternalAppByPath(relativeAppPath, args = []) {
         const appPath = path.join(FS_ROOT, relativeAppPath);
         const appDir = path.dirname(appPath);
 
-        const spawnArgs = ['.', ...args];
+        const spawnArgs = ['.', '--launched-by-host', ...args];
         console.log(`Attempting to launch external app from directory: ${appDir} with args: ${spawnArgs.join(' ')}`);
         
         const child = spawn(process.execPath, spawnArgs, {
