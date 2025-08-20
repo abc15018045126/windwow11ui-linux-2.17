@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { AppDefinition, AppComponentProps } from '../../../types';
-import { StoreIcon, RefreshIcon, TerminalIcon } from '../../../constants';
+import { StoreIcon, RefreshIcon, HyperIcon } from '../../../constants';
 
 const AppStoreApp: React.FC<AppComponentProps> = ({ setTitle }) => {
     const [availableApps, setAvailableApps] = useState<any[]>([]);
@@ -74,7 +73,7 @@ const AppStoreApp: React.FC<AppComponentProps> = ({ setTitle }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {availableApps.map(app => (
                         <div key={app.id} className="bg-zinc-800/50 p-4 rounded-lg flex items-center space-x-4">
-                            <TerminalIcon className="w-12 h-12 flex-shrink-0" />
+                            <HyperIcon className="w-12 h-12 flex-shrink-0" />
                             <div className="flex-grow overflow-hidden">
                                 <h2 className="font-semibold text-white truncate">{app.name}</h2>
                                 <p className="text-xs text-zinc-400">Version {app.version}</p>

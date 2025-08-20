@@ -1,27 +1,23 @@
 import { useState, useCallback, useEffect } from 'react';
-import { OpenApp } from '../types';
-import { AppDefinition } from '../types'; // This is the static definition
-import { DiscoveredAppDefinition } from '../contexts/AppContext';
+import { OpenApp, AppDefinition } from '../types';
 import { TASKBAR_HEIGHT, DEFAULT_WINDOW_WIDTH, DEFAULT_WINDOW_HEIGHT } from '../constants';
-import { APP_DEFINITIONS } from '../../components/apps';
+import { getAppDefinitions } from '../../components/apps';
 
 export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) => {
   const [openApps, setOpenApps] = useState<OpenApp[]>([]);
   const [activeAppInstanceId, setActiveAppInstanceId] = useState<string | null>(null);
   const [nextZIndex, setNextZIndex] = useState<number>(10);
-  const [discoveredApps, setDiscoveredApps] = useState<DiscoveredAppDefinition[]>([]);
+  const [appDefinitions, setAppDefinitions] = useState<AppDefinition[]>([]);
+  const [appsLoading, setAppsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchApps = async () => {
-      try {
-        const response = await fetch('http://localhost:3001/api/apps');
-        const apps = await response.json();
-        setDiscoveredApps(apps);
-      } catch (error) {
-        console.error("Failed to fetch apps:", error);
-      }
+    const loadApps = async () => {
+      setAppsLoading(true);
+      const definitions = await getAppDefinitions();
+      setAppDefinitions(definitions);
+      setAppsLoading(false);
     };
-    fetchApps();
+    loadApps();
   }, []);
 
   const getNextPosition = (appWidth: number, appHeight: number) => {
@@ -40,16 +36,24 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
   };
 
   const openApp = useCallback(async (appIdentifier: string | AppDefinition, initialData?: any) => {
-    // 1. Resolve the App Definition from the master list
-    const appId = typeof appIdentifier === 'string' ? appIdentifier : appIdentifier.id;
-    const appDef = APP_DEFINITIONS.find(app => app.id === appId);
+    let appDef: AppDefinition | undefined;
+
+    if (typeof appIdentifier === 'string') {
+        appDef = appDefinitions.find(app => app.id === appIdentifier);
+    } else {
+        const potentialAppDef = appIdentifier as any;
+        if (potentialAppDef.path && !potentialAppDef.externalPath) {
+            potentialAppDef.externalPath = potentialAppDef.path;
+        }
+        appDef = potentialAppDef;
+    }
 
     if (!appDef) {
-        console.error(`App with identifier "${appId}" not found in APP_DEFINITIONS.`);
+        const id = typeof appIdentifier === 'string' ? appIdentifier : JSON.stringify(appIdentifier);
+        console.error(`App with identifier "${id}" not found or invalid.`);
         return;
     }
 
-    // 2. Handle External Apps
     if (appDef.isExternal && appDef.externalPath) {
       if (window.electronAPI?.launchExternalApp) {
         window.electronAPI.launchExternalApp(appDef.externalPath);
@@ -66,14 +70,18 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
       return;
     }
 
-    // 3. Handle Internal Apps
+    if (!appDef.id) {
+        console.error("Cannot open internal app without an ID.", appDef);
+        return;
+    }
+
     if (!initialData) {
-      const existingAppInstance = openApps.find(app => app.id === appDef.id && !app.isMinimized);
+      const existingAppInstance = openApps.find(app => app.id === appDef!.id && !app.isMinimized);
       if (existingAppInstance) {
         focusApp(existingAppInstance.instanceId);
         return;
       }
-      const minimizedInstance = openApps.find(app => app.id === appDef.id && app.isMinimized);
+      const minimizedInstance = openApps.find(app => app.id === appDef!.id && app.isMinimized);
       if (minimizedInstance) {
         toggleMinimizeApp(minimizedInstance.instanceId);
         return;
@@ -89,7 +97,7 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
 
     const newApp: OpenApp = {
       ...appDef,
-      icon: appDef.id, // Pass the icon name string
+      icon: appDef.icon,
       instanceId,
       zIndex: newZIndex,
       position: getNextPosition(defaultWidth, defaultHeight),
@@ -102,7 +110,7 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
 
     setOpenApps(prev => [...prev, newApp]);
     setActiveAppInstanceId(instanceId);
-  }, [nextZIndex, openApps, discoveredApps]);
+  }, [appDefinitions, openApps, nextZIndex]);
 
   const focusApp = useCallback((instanceId: string) => {
     if (activeAppInstanceId === instanceId) return;

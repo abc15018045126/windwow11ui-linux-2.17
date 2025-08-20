@@ -8,14 +8,14 @@ import Desktop from './components/Desktop';
 import { ThemeContext, themes } from './theme';
 import { AppContext } from './contexts/AppContext';
 import { useWindowManager } from './hooks/useWindowManager';
-import { APP_DEFINITIONS } from '../components/apps';
 
 const App: React.FC = () => {
   const desktopRef = useRef<HTMLDivElement>(null);
   const {
     openApps,
     activeAppInstanceId,
-    discoveredApps,
+    appDefinitions,
+    appsLoading,
     openApp,
     focusApp,
     closeApp,
@@ -78,74 +78,79 @@ const App: React.FC = () => {
 
 
   return (
-    <AppContext.Provider value={{ apps: APP_DEFINITIONS }}>
+    <AppContext.Provider value={{ apps: appDefinitions }}>
       <ThemeContext.Provider value={{ theme, setTheme: handleThemeChange }}>
         <div
           ref={desktopRef}
           className="h-screen w-screen flex flex-col bg-cover bg-center"
           style={{ backgroundImage: `url(${theme.wallpaper})` }}
         >
-          <div className="flex-grow relative overflow-hidden">
-            <Desktop
-                openApp={openApp}
-                clipboard={clipboard}
-                handleCopy={handleCopy}
-                handleCut={handleCut}
-                handlePaste={handlePaste}
-                key={refreshId} // Force remount on refresh
-            />
-            {openApps.filter(app => !app.isMinimized).map(app => (
-              <AppWindow
-                key={app.instanceId}
-                app={{...app, initialData: {...app.initialData, refreshId, triggerRefresh}}}
-                onClose={() => closeApp(app.instanceId)}
-                onMinimize={() => toggleMinimizeApp(app.instanceId)}
-                onMaximize={() => toggleMaximizeApp(app.instanceId)}
-                onFocus={() => focusApp(app.instanceId)}
-                onDrag={updateAppPosition}
-                onResize={updateAppSize}
-                isActive={app.instanceId === activeAppInstanceId}
-                desktopRef={desktopRef}
-                onSetTitle={(newTitle) => updateAppTitle(app.instanceId, newTitle)}
-                onWallpaperChange={() => {}} // This is now handled by themes app
-                openApp={openApp}
-                clipboard={clipboard}
-                handleCopy={handleCopy}
-                handleCut={handleCut}
-                handlePaste={handlePaste}
+          {appsLoading ? (
+            <div className="flex-grow flex items-center justify-center text-white">
+              Loading OS...
+            </div>
+          ) : (
+            <>
+              <div className="flex-grow relative overflow-hidden">
+                <Desktop
+                    openApp={openApp}
+                    clipboard={clipboard}
+                    handleCopy={handleCopy}
+                    handleCut={handleCut}
+                    handlePaste={handlePaste}
+                    key={refreshId} // Force remount on refresh
+                />
+                {openApps.filter(app => !app.isMinimized).map(app => (
+                  <AppWindow
+                    key={app.instanceId}
+                    app={{...app, initialData: {...app.initialData, refreshId, triggerRefresh}}}
+                    onClose={() => closeApp(app.instanceId)}
+                    onMinimize={() => toggleMinimizeApp(app.instanceId)}
+                    onMaximize={() => toggleMaximizeApp(app.instanceId)}
+                    onFocus={() => focusApp(app.instanceId)}
+                    onDrag={updateAppPosition}
+                    onResize={updateAppSize}
+                    isActive={app.instanceId === activeAppInstanceId}
+                    desktopRef={desktopRef}
+                    onSetTitle={(newTitle) => updateAppTitle(app.instanceId, newTitle)}
+                    onWallpaperChange={() => {}} // This is now handled by themes app
+                    openApp={openApp}
+                    clipboard={clipboard}
+                    handleCopy={handleCopy}
+                    handleCut={handleCut}
+                    handlePaste={handlePaste}
+                  />
+                ))}
+              </div>
+
+              {isStartMenuOpen && (
+                <StartMenu
+                  onOpenApp={openApp}
+                  onClose={() => setIsStartMenuOpen(false)}
+                />
+              )}
+
+              <Taskbar
+                openApps={openApps}
+                activeAppInstanceId={activeAppInstanceId}
+                onToggleStartMenu={toggleStartMenu}
+                onAppIconClick={(appId, instanceId) => {
+                  if (instanceId) {
+                    const app = openApps.find(a => a.instanceId === instanceId);
+                    if (app?.isMinimized) {
+                        toggleMinimizeApp(instanceId);
+                    } else if (activeAppInstanceId !== instanceId) {
+                        focusApp(instanceId);
+                    } else {
+                        toggleMinimizeApp(instanceId);
+                    }
+                  } else {
+                    openApp(appId);
+                  }
+                }}
               />
-            ))}
-          </div>
-
-          {isStartMenuOpen && (
-            <StartMenu
-              onOpenApp={openApp}
-              onClose={() => setIsStartMenuOpen(false)}
-            />
+            </>
           )}
-
-          <Taskbar
-            openApps={openApps}
-            activeAppInstanceId={activeAppInstanceId}
-            onToggleStartMenu={toggleStartMenu}
-            onAppIconClick={(appId, instanceId) => {
-              if (instanceId) {
-                const app = openApps.find(a => a.instanceId === instanceId);
-                if (app?.isMinimized) {
-                    toggleMinimizeApp(instanceId);
-                } else if (activeAppInstanceId !== instanceId) {
-                    focusApp(instanceId);
-                } else {
-                    toggleMinimizeApp(instanceId);
-                }
-              } else {
-                const appInfo = discoveredApps.find(app => app.appId === appId);
-                if (appInfo) {
-                  openApp(appInfo);
-                }
-              }
-            }}
-          />
         </div>
       </ThemeContext.Provider>
     </AppContext.Provider>
