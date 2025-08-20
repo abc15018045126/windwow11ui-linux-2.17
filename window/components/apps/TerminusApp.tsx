@@ -205,7 +205,7 @@ const TerminusApp: React.FC<AppComponentProps> = ({ setTitle }) => {
 export const appDefinition: AppDefinition = {
   id: 'terminus',
   name: 'Terminus',
-  icon: 'terminus',
+  icon: TerminusIcon,
   component: TerminusApp,
   defaultSize: { width: 800, height: 500 },
 };

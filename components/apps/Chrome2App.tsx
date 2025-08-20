@@ -13,7 +13,7 @@ const Chrome2App: React.FC<AppComponentProps> = ({ setTitle }) => {
 export const appDefinition: AppDefinition = {
   id: 'chrome2',
   name: 'Chrome 2',
-  icon: 'chrome2',
+  icon: Browser2Icon,
   component: Chrome2App,
   isExternal: true,
   externalPath: 'components/apps/chrome2',

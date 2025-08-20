@@ -152,7 +152,7 @@ const Chrome3App: React.FC<AppComponentProps> = ({ setTitle: setWindowTitle, app
 export const appDefinition: AppDefinition = {
   id: 'chrome3',
   name: 'Chrome 3',
-  icon: 'chrome3',
+  icon: Browser3Icon,
   component: Chrome3App,
   isExternal: false, 
   isPinnedToTaskbar: true,

@@ -1,5 +1,5 @@
 {
-  "name": "chrome7",
+  "name": "hellow",
   "version": "1.0.0",
   "description": "A test Electron app.",
   "main": "main.js",
@@ -7,6 +7,6 @@
     "start": "electron ."
   },
   "dependencies": {
-    "electron": "^30.0.1"
+    "electron": "^26.2.0"
   }
 }

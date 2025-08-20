@@ -10,15 +10,16 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
   const [appDefinitions, setAppDefinitions] = useState<AppDefinition[]>([]);
   const [appsLoading, setAppsLoading] = useState(true);
 
-  useEffect(() => {
-    const loadApps = async () => {
-      setAppsLoading(true);
-      const definitions = await getAppDefinitions();
-      setAppDefinitions(definitions);
-      setAppsLoading(false);
-    };
-    loadApps();
+  const loadAndSetApps = useCallback(async () => {
+    setAppsLoading(true);
+    const definitions = await getAppDefinitions();
+    setAppDefinitions(definitions);
+    setAppsLoading(false);
   }, []);
+
+  useEffect(() => {
+    loadApps();
+  }, [loadApps]);
 
   const getNextPosition = (appWidth: number, appHeight: number) => {
     const desktopWidth = desktopRef.current?.clientWidth || window.innerWidth;
@@ -43,36 +44,21 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
     } else {
         const potentialAppDef = appIdentifier as any;
         if (potentialAppDef.path && !potentialAppDef.externalPath) {
-            potentialAppDef.externalPath = potentialAppDef.path;
+            potentialAppDef.externalPath = potentialAppDef.path + '/main.js';
         }
         appDef = potentialAppDef;
     }
 
     if (!appDef) {
-        const id = typeof appIdentifier === 'string' ? appIdentifier : JSON.stringify(appIdentifier);
-        console.error(`App with identifier "${id}" not found or invalid.`);
+        console.error(`App with identifier "${typeof appIdentifier === 'string' ? appIdentifier : appIdentifier.id}" not found.`);
         return;
     }
 
     if (appDef.isExternal && appDef.externalPath) {
       if (window.electronAPI?.launchExternalApp) {
         window.electronAPI.launchExternalApp(appDef.externalPath);
-      } else {
-        fetch('http://localhost:3001/api/launch', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ path: appDef.externalPath }),
-        }).catch(error => {
-          console.error('Failed to launch external app via API:', error);
-          alert('Failed to launch application. Ensure the backend server is running.');
-        });
       }
       return;
-    }
-
-    if (!appDef.id) {
-        console.error("Cannot open internal app without an ID.", appDef);
-        return;
     }
 
     if (!initialData) {
@@ -90,14 +76,12 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
 
     const instanceId = `${appDef.id}-${Date.now()}`;
     const newZIndex = nextZIndex + 1;
-    setNextZIndex(newZIndex);
 
     const defaultWidth = appDef.defaultSize?.width || DEFAULT_WINDOW_WIDTH;
     const defaultHeight = appDef.defaultSize?.height || DEFAULT_WINDOW_HEIGHT;
 
     const newApp: OpenApp = {
       ...appDef,
-      icon: appDef.icon,
       instanceId,
       zIndex: newZIndex,
       position: getNextPosition(defaultWidth, defaultHeight),
@@ -108,6 +92,7 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
       initialData: initialData,
     };
 
+    setNextZIndex(newZIndex);
     setOpenApps(currentOpenApps => [...currentOpenApps, newApp]);
     setActiveAppInstanceId(instanceId);
   }, [appDefinitions, nextZIndex]);
@@ -132,7 +117,7 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
       const nextActiveApp = remainingApps.length > 0 ? remainingApps[remainingApps.length - 1].instanceId : null;
       setActiveAppInstanceId(nextActiveApp);
     }
-  }, [activeAppInstanceId, openApps]);
+  }, [activeAppInstanceId]);
 
   const toggleMinimizeApp = useCallback((instanceId: string) => {
      const app = openApps.find(a => a.instanceId === instanceId);
@@ -152,7 +137,7 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
     } else if (activeAppInstanceId === instanceId) {
         setActiveAppInstanceId(null);
     }
-  }, [openApps, activeAppInstanceId, focusApp]);
+  }, [activeAppInstanceId, focusApp]);
 
  const toggleMaximizeApp = useCallback((instanceId: string) => {
     setOpenApps(prevOpenApps =>
@@ -206,13 +191,12 @@ export const useWindowManager = (desktopRef: React.RefObject<HTMLDivElement>) =>
     );
   }, []);
 
-  // The hook returns everything the App component needs
   return {
     openApps,
     activeAppInstanceId,
     appDefinitions,
     appsLoading,
-    desktopRef, // We need to pass the real ref from the component
+    loadAndSetApps, // Expose a reload function
     openApp,
     focusApp,
     closeApp,

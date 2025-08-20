@@ -148,7 +148,7 @@ const ChromeApp: React.FC<AppComponentProps> = ({ setTitle: setWindowTitle }) =>
 export const appDefinition: AppDefinition = {
   id: 'chrome',
   name: 'Chrome',
-  icon: 'chrome',
+  icon: BrowserIcon,
   component: ChromeApp,
   defaultSize: { width: 900, height: 650 },
   isPinnedToTaskbar: true,

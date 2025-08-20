@@ -59,7 +59,7 @@ const StartMenu: React.FC<StartMenuProps> = ({ onOpenApp, onClose }) => {
                       className={`w-full flex items-center p-2 rounded-md transition-colors ${theme.startMenu.buttonHover}`}
                       title={app.name}
                     >
-                      <Icon iconName={app.icon} className="w-6 h-6 mr-4 flex-shrink-0" />
+                      <Icon iconName={app.id} className="w-6 h-6 mr-4 flex-shrink-0" />
                       <span className="text-sm text-left truncate">{app.name}</span>
                     </button>
                 ))}
@@ -86,7 +86,7 @@ const StartMenu: React.FC<StartMenuProps> = ({ onOpenApp, onClose }) => {
                       className={`flex flex-col items-center justify-center p-2 rounded-md transition-colors aspect-square ${theme.startMenu.pinnedButton}`}
                       title={app.name}
                     >
-                      <Icon iconName={app.icon} className="w-8 h-8 mb-1.5" />
+                      <Icon iconName={app.id} className="w-8 h-8 mb-1.5" />
                       <span className="text-xs text-center truncate w-full">{app.name}</span>
                     </button>
                 ))}
@@ -102,7 +102,7 @@ const StartMenu: React.FC<StartMenuProps> = ({ onOpenApp, onClose }) => {
                       className={`w-full flex items-center p-2 rounded-md transition-colors ${theme.startMenu.buttonHover}`}
                       title={app.name}
                     >
-                      <Icon iconName={app.icon} className="w-6 h-6 mr-3 flex-shrink-0" />
+                      <Icon iconName={app.id} className="w-6 h-6 mr-3 flex-shrink-0" />
                       <span className="text-sm text-left truncate">{app.name}</span>
                     </button>
                 ))}

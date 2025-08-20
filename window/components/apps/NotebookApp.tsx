@@ -281,7 +281,7 @@ const NotebookApp: React.FC<AppComponentProps> = ({ setTitle, initialData }) => 
 export const appDefinition: AppDefinition = {
   id: 'notebook',
   name: 'Notebook',
-  icon: 'notebook',
+  icon: NotebookIcon,
   component: NotebookApp,
   defaultSize: { width: 600, height: 500 },
 };

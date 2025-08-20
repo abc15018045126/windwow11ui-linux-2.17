@@ -162,7 +162,7 @@ const HyperApp: React.FC<AppComponentProps> = ({ appInstanceId, setTitle }) => {
 export const appDefinition: AppDefinition = {
   id: 'hyper',
   name: 'Hyper',
-  icon: 'hyper',
+  icon: HyperIcon,
   component: HyperApp,
   defaultSize: { width: 680, height: 420 },
   isPinnedToTaskbar: true,

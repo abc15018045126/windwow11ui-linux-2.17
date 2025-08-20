@@ -56,7 +56,7 @@ const SettingsApp: React.FC<AppComponentProps> = ({ setTitle, onWallpaperChange 
 export const appDefinition: AppDefinition = {
   id: 'settings',
   name: 'Settings',
-  icon: 'settings',
+  icon: SettingsIcon,
   component: SettingsApp,
   defaultSize: { width: 700, height: 500 },
   isPinnedToTaskbar: true,

@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { AppDefinition, AppComponentProps } from '../../window/types';
-import { RefreshIcon, HyperIcon } from '../../window/constants';
-import * as FsService from '../../services/filesystemService';
-import Icon from './icon';
+import { RefreshIcon } from '../../window/constants';
+import Icon from '../../window/components/icon';
 
-const AppStoreApp: React.FC<AppComponentProps> = ({ setTitle }) => {
+const AppStoreApp: React.FC<AppComponentProps> = ({ setTitle, initialData }) => {
     const [availableApps, setAvailableApps] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+    const triggerRefresh = initialData?.triggerRefresh;
 
     const fetchAvailableApps = useCallback(async () => {
         setIsLoading(true);
@@ -26,8 +26,9 @@ const AppStoreApp: React.FC<AppComponentProps> = ({ setTitle }) => {
     }, []);
 
     useEffect(() => {
-        setTitle('App Store');
-    }, [setTitle]);
+        // Fetch apps when the component mounts
+        fetchAvailableApps();
+    }, [fetchAvailableApps]);
 
     const handleInstall = async (app: any) => {
         try {
@@ -40,9 +41,11 @@ const AppStoreApp: React.FC<AppComponentProps> = ({ setTitle }) => {
                 const errorData = await response.json();
                 throw new Error(errorData.error || 'Installation failed');
             }
-            alert(`App ${app.name} installed successfully! You may need to restart the application to see it in the Start Menu.`);
+            alert(`App ${app.name} installed successfully! Restart the OS to see it in the Start Menu.`);
             // Refresh the list to show the new "Installed" state
             fetchAvailableApps();
+            // Also trigger a refresh of the main app's definitions
+            triggerRefresh?.();
         } catch (error) {
             console.error("Error installing app:", error);
             alert(`Failed to install ${app.name}: ${error.message}`);
@@ -74,7 +77,7 @@ const AppStoreApp: React.FC<AppComponentProps> = ({ setTitle }) => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {availableApps.map(app => (
                         <div key={app.id} className="bg-zinc-800/50 p-4 rounded-lg flex items-center space-x-4">
-                            <HyperIcon className="w-12 h-12 flex-shrink-0" />
+                            <Icon iconName="chrome" className="w-12 h-12 flex-shrink-0" />
                             <div className="flex-grow overflow-hidden">
                                 <h2 className="font-semibold text-white truncate">{app.name}</h2>
                                 <p className="text-xs text-zinc-400">Version {app.version}</p>
