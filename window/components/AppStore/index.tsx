@@ -4,7 +4,7 @@ import { StoreIcon, RefreshIcon, HyperIcon } from '../../../constants';
 
 const AppStoreApp: React.FC<AppComponentProps> = ({ setTitle }) => {
     const [availableApps, setAvailableApps] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [isLoading, setIsLoading] = useState(false);
 
     const fetchAvailableApps = useCallback(async () => {
         setIsLoading(true);
@@ -25,8 +25,7 @@ const AppStoreApp: React.FC<AppComponentProps> = ({ setTitle }) => {
 
     useEffect(() => {
         setTitle('App Store');
-        fetchAvailableApps();
-    }, [setTitle, fetchAvailableApps]);
+    }, [setTitle]);
 
     const handleInstall = async (app: any) => {
         try {
