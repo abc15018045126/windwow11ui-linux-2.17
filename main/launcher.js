@@ -6,18 +6,16 @@ function launchExternalAppByPath(relativeAppPath, args = []) {
     try {
         const appDir = path.join(FS_ROOT, relativeAppPath);
 
-        // The first argument to Electron should be the path to the app to launch.
-        // We also add our custom flag to identify it as a child process.
-        const spawnArgs = [appDir, '--launched-by-host', ...args];
-        console.log(`Attempting to launch external app from directory: ${appDir} with args: ${spawnArgs.join(' ')}`);
+        console.log(`Attempting to launch external app via 'npm start' in directory: ${appDir}`);
         
-        const child = spawn(process.execPath, spawnArgs, {
+        // We use a shell to chain 'cd' and 'npm start'. This is more robust for launching separate projects.
+        // The 'detached: true' and 'stdio: 'ignore'' options allow the child process to run independently
+        // of the main application, so it will continue running even if the main app is closed.
+        const child = spawn('npm', ['start'], {
+            cwd: appDir,
             detached: true,
-            stdio: 'inherit',
-            env: {
-                ...process.env,
-                NODE_PATH: path.resolve(FS_ROOT, 'node_modules'),
-            }
+            stdio: 'ignore', // Use 'ignore' to prevent stdio pipes from keeping the process alive
+            shell: true, // Important to use shell for 'npm start' on all platforms
         });
 
         child.on('error', (err) => {
@@ -30,7 +28,9 @@ function launchExternalAppByPath(relativeAppPath, args = []) {
             }
         });
 
+        // Unreference the child process to allow the parent to exit independently
         child.unref();
+
         return true;
     } catch (error) {
         console.error(`Error launching external app for path ${relativeAppPath}:`, error);
