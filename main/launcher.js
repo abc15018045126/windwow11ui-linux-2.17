@@ -5,22 +5,26 @@ const { FS_ROOT } = require('./constants');
 function launchExternalAppByPath(relativeAppPath, args = []) {
     try {
         const appDir = path.join(FS_ROOT, relativeAppPath);
+        const appName = path.basename(appDir);
 
-        console.log(`Attempting to launch external app via 'npm start' in directory: ${appDir}`);
-        
-        const child = spawn('npm', ['start', ...args], {
-            cwd: appDir,
+        // This is the definitive, correct way to launch the child process.
+        // 1. We call the main Electron executable (`process.execPath`).
+        // 2. The first argument is the path to the application directory we want to launch.
+        // 3. We add `--launched-by-host` so the child process knows not to re-initialize servers.
+        const spawnArgs = [appDir, '--launched-by-host', ...args];
+
+        console.log(`[Launcher] Spawning: ${process.execPath} ${spawnArgs.join(' ')}`);
+
+        const child = spawn(process.execPath, spawnArgs, {
             detached: true,
             stdio: 'pipe',
-            shell: true,
+            // Provide the NODE_PATH to ensure the child can find the parent's `electron` module.
+            // This is critical for preventing "Cannot find module" errors.
             env: {
                 ...process.env,
-                // Ensure the child process can find the parent's node_modules, especially electron.
                 NODE_PATH: path.resolve(FS_ROOT, 'node_modules'),
             }
         });
-
-        const appName = path.basename(appDir);
 
         child.stdout.on('data', (data) => {
             console.log(`[${appName}] stdout: ${data}`);
