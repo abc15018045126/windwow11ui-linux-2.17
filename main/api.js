@@ -27,6 +27,97 @@ function startApiServer() {
         }
     });
 
+    // Endpoint to "install" an app by creating its .tsx file
+    apiApp.post('/api/install', async (req, res) => {
+        const { id, name, path: appPath } = req.body;
+        if (!id || !name || !appPath) {
+            return res.status(400).json({ error: 'Missing required app details for installation.' });
+        }
+
+        const componentName = `${name}App`;
+        const tsxFilePath = path.join(FS_ROOT, 'components', 'apps', `${componentName}.tsx`);
+
+        // Note: The externalPath for the original chrome5 pointed to the main.js file.
+        // The discovery mechanism gives us a directory. We'll assume main.js is the entry point.
+        const externalPath = path.join(appPath, 'main.js');
+
+        const tsxContent = `
+import React from 'react';
+import { AppDefinition, AppComponentProps } from '../../window/types';
+import { BrowserIcon } from '../../window/constants';
+
+const ${componentName}: React.FC<AppComponentProps> = () => {
+  // This component is a placeholder for an external app.
+  return null;
+};
+
+export const appDefinition: AppDefinition = {
+  id: '${id}',
+  name: '${name}',
+  icon: 'chrome', // Using a generic chrome icon for all discovered apps
+  component: ${componentName},
+  isExternal: true,
+  externalPath: '${externalPath.replace(/\\/g, '/')}', // Ensure forward slashes for consistency
+};
+
+export default ${componentName};
+`;
+
+        try {
+            await fs.promises.writeFile(tsxFilePath, tsxContent.trim());
+            console.log(`Successfully created ${tsxFilePath}`);
+            res.status(201).json({ success: true, message: `App ${name} installed.` });
+        } catch (error) {
+            console.error(`Failed to write TSX file for ${name}:`, error);
+            res.status(500).json({ error: `Failed to install app ${name}.` });
+        }
+    });
+
+    // App Discovery Endpoint
+    apiApp.get('/api/apps', async (req, res) => {
+        try {
+            const appsDir = path.join(FS_ROOT, 'components', 'apps');
+            const appFiles = await fs.promises.readdir(appsDir);
+
+            const appPromises = appFiles
+                .filter(file => file.endsWith('.app'))
+                .map(async (file) => {
+                    try {
+                        const filePath = path.join(appsDir, file);
+                        const content = await fs.promises.readFile(filePath, 'utf-8');
+                        const definition = JSON.parse(content);
+                        definition.id = file; // Use filename as a unique ID
+                        return definition;
+                    } catch (e) {
+                        console.error(`Could not parse app definition: ${file}`, e);
+                        return null; // Ignore malformed app files
+                    }
+                });
+
+            const apps = (await Promise.all(appPromises)).filter(Boolean); // Filter out nulls
+            res.json(apps);
+        } catch (error) {
+            console.error('API Error getting app list:', error);
+            res.status(500).json({ error: 'Failed to get app list' });
+        }
+    });
+
+    // New route to launch external apps
+    apiApp.post('/api/launch', (req, res) => {
+        const { path: relativeAppPath, args } = req.body;
+        if (!relativeAppPath) {
+            return res.status(400).json({ error: 'Missing path in request body' });
+        }
+        
+        const success = launchExternalAppByPath(relativeAppPath, args);
+        
+        if (success) {
+            res.json({ success: true, message: 'App launch initiated.' });
+        } else {
+            res.status(500).json({ error: 'Failed to launch application.' });
+        }
+    });
+
     // App Discovery Endpoint
     apiApp.get('/api/apps', async (req, res) => {
         try {
@@ -67,64 +158,6 @@ function startApiServer() {
         } catch (error) {
             console.error('API Error getting app list:', error);
             res.status(500).json({ error: 'Failed to get app list' });
-        }
-    });
-
-    // Endpoint to "install" an app by creating its .tsx file
-    apiApp.post('/api/install', async (req, res) => {
-        const { id, name, path: appPath } = req.body;
-        if (!id || !name || !appPath) {
-            return res.status(400).json({ error: 'Missing required app details for installation.' });
-        }
-
-        const componentName = `${name}App`;
-        const tsxFilePath = path.join(FS_ROOT, 'components', 'apps', `${componentName}.tsx`);
-
-        const tsxContent = `
-import React from 'react';
-import { AppDefinition, AppComponentProps } from '../../window/types';
-import { HyperIcon } from '../../window/constants'; // Using a generic icon
-
-const ${componentName}: React.FC<AppComponentProps> = () => {
-  // This component can be minimal as it's for an external app
-  return null;
-};
-
-export const appDefinition: AppDefinition = {
-  id: '${id}',
-  name: '${name}',
-  icon: 'hyper', // Assign a generic icon name as a string
-  isExternal: true,
-  externalPath: '${appPath}',
-  component: ${componentName},
-};
-
-export default ${componentName};
-`;
-
-        try {
-            await fs.promises.writeFile(tsxFilePath, tsxContent.trim());
-            console.log(`Successfully created ${tsxFilePath}`);
-            res.status(201).json({ success: true, message: `App ${name} installed.` });
-        } catch (error) {
-            console.error(`Failed to write TSX file for ${name}:`, error);
-            res.status(500).json({ error: `Failed to install app ${name}.` });
-        }
-    });
-
-    // New route to launch external apps
-    apiApp.post('/api/launch', (req, res) => {
-        const { path: relativeAppPath, args } = req.body;
-        if (!relativeAppPath) {
-            return res.status(400).json({ error: 'Missing path in request body' });
-        }
-        
-        const success = launchExternalAppByPath(relativeAppPath, args);
-        
-        if (success) {
-            res.json({ success: true, message: 'App launch initiated.' });
-        } else {
-            res.status(500).json({ error: 'Failed to launch application.' });
         }
     });
 

@@ -16,6 +16,7 @@ const App: React.FC = () => {
     activeAppInstanceId,
     appDefinitions,
     appsLoading,
+    loadAndSetApps,
     openApp,
     focusApp,
     closeApp,
@@ -37,9 +38,12 @@ const App: React.FC = () => {
     setCurrentThemeId(themeId);
   };
 
-  // A simple way to trigger refresh in filesystem-aware components
-  const [refreshId, setRefreshId] = useState(0);
-  const triggerRefresh = () => setRefreshId(id => id + 1);
+  const triggerRefresh = () => {
+    // This is a bit of a hack to force a refresh of filesystem-aware components
+    // A more robust solution would use a state management library or context.
+    // For now, we can also just reload the app definitions.
+    loadAndSetApps();
+  };
 
   const toggleStartMenu = useCallback(() => setIsStartMenuOpen(prev => !prev), []);
 
@@ -61,7 +65,7 @@ const App: React.FC = () => {
         setClipboard(null);
     }
     triggerRefresh();
-  }, [clipboard]);
+  }, [clipboard, triggerRefresh]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -98,12 +102,12 @@ const App: React.FC = () => {
                     handleCopy={handleCopy}
                     handleCut={handleCut}
                     handlePaste={handlePaste}
-                    key={refreshId} // Force remount on refresh
+                    key={Date.now()} // Force remount on refresh
                 />
                 {openApps.filter(app => !app.isMinimized).map(app => (
                   <AppWindow
                     key={app.instanceId}
-                    app={{...app, initialData: {...app.initialData, refreshId, triggerRefresh}}}
+                    app={{...app, initialData: {...app.initialData, triggerRefresh}}}
                     onClose={() => closeApp(app.instanceId)}
                     onMinimize={() => toggleMinimizeApp(app.instanceId)}
                     onMaximize={() => toggleMaximizeApp(app.instanceId)}

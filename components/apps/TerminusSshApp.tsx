@@ -203,7 +203,7 @@ const TerminusSshApp: React.FC<AppComponentProps> = ({ setTitle }) => {
 export const appDefinition: AppDefinition = {
   id: 'terminusSsh',
   name: 'Terminus SSH',
-  icon: 'terminusSsh',
+  icon: TerminusIcon,
   component: TerminusSshApp,
   defaultSize: { width: 800, height: 500 },
 };
