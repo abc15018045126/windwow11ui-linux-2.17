@@ -8,32 +8,38 @@ function launchExternalAppByPath(relativeAppPath, args = []) {
 
         console.log(`Attempting to launch external app via 'npm start' in directory: ${appDir}`);
         
-        // We use a shell to chain 'cd' and 'npm start'. This is more robust for launching separate projects.
-        // The 'detached: true' and 'stdio: 'ignore'' options allow the child process to run independently
-        // of the main application, so it will continue running even if the main app is closed.
-        const child = spawn('npm', ['start'], {
+        const child = spawn('npm', ['start', ...args], {
             cwd: appDir,
             detached: true,
-            stdio: 'pipe', // We use 'pipe' to capture stderr
+            stdio: 'pipe',
             shell: true,
+            env: {
+                ...process.env,
+                // Ensure the child process can find the parent's node_modules, especially electron.
+                NODE_PATH: path.resolve(FS_ROOT, 'node_modules'),
+            }
         });
 
-        // Log any errors from the child process
+        const appName = path.basename(appDir);
+
+        child.stdout.on('data', (data) => {
+            console.log(`[${appName}] stdout: ${data}`);
+        });
+
         child.stderr.on('data', (data) => {
-            console.error(`[${path.basename(appDir)}] stderr: ${data}`);
+            console.error(`[${appName}] stderr: ${data}`);
         });
 
         child.on('error', (err) => {
-            console.error(`[Launcher] Failed to start subprocess for ${appDir}. Error: ${err.message}`);
+            console.error(`[Launcher] Failed to start subprocess for ${appName}. Error: ${err.message}`);
         });
 
         child.on('exit', (code, signal) => {
             if (code !== 0) {
-                console.error(`[Launcher] Subprocess for ${appDir} exited with code ${code} and signal ${signal}`);
+                console.error(`[Launcher] Subprocess for ${appName} exited with code ${code} and signal ${signal}`);
             }
         });
 
-        // Unreference the child process to allow the parent to exit independently
         child.unref();
 
         return true;
