@@ -93,7 +93,7 @@ const ${componentName}: React.FC<AppComponentProps> = () => {
 export const appDefinition: AppDefinition = {
   id: '${id}',
   name: '${name}',
-  icon: HyperIcon, // Assign a generic icon
+  icon: 'hyper', // Assign a generic icon name as a string
   isExternal: true,
   externalPath: '${appPath}',
   component: ${componentName},
